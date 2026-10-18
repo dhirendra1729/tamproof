@@ -3,60 +3,45 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0e14;
-  --foreground: #e5e7eb;
+  --background: #F2F7F4;
+  --foreground: #223326;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  background-image: radial-gradient(rgba(34, 211, 238, 0.05) 1px, transparent 0);
-  background-size: 24px 24px;
   min-height: 100vh;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
-/* Custom forensic scrollbar */
+/* Light forensic scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0e14;
+  background: #EBF3EE;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1f2937;
+  background: #AEC2B4;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #374151;
+  background: #5A7D5C;
 }
 
-@keyframes pulseGlowRed {
+@keyframes pulseGlowRedLight {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.4), inset 0 0 10px rgba(239, 68, 68, 0.2);
+    box-shadow: 0 0 10px rgba(217, 56, 58, 0.3), inset 0 0 4px rgba(217, 56, 58, 0.2);
   }
   50% {
-    box-shadow: 0 0 25px rgba(239, 68, 68, 0.8), inset 0 0 15px rgba(239, 68, 68, 0.5);
+    box-shadow: 0 0 20px rgba(217, 56, 58, 0.6), inset 0 0 8px rgba(217, 56, 58, 0.35);
   }
 }
 
 .glow-red {
-  animation: pulseGlowRed 1.8s infinite;
-}
-
-@keyframes pulseGlowCyan {
-  0%, 100% {
-    box-shadow: 0 0 10px rgba(34, 211, 238, 0.2);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
-  }
-}
-
-.glow-cyan {
-  animation: pulseGlowCyan 2.5s infinite;
+  animation: pulseGlowRedLight 1.8s infinite;
 }
