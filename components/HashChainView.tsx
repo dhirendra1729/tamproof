@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Link2, ArrowRight, AlertOctagon, CheckCircle2 } from "lucide-react";
 import { ChainBlock } from "@/lib/types";
 
 interface HashChainViewProps {
@@ -18,125 +17,121 @@ export function HashChainView({
   const getActionBadgeClass = (action: string) => {
     switch (action) {
       case "ADD":
-        return "bg-cyan-950/70 border-cyan-500/40 text-cyan-300";
+        return "bg-[#EBF3EE] border-2 border-[#5A7D5C] text-[#5A7D5C]";
       case "REPLACE":
-        return "bg-blue-950/70 border-blue-500/40 text-blue-300";
+        return "bg-[#E0F2FE] border-2 border-[#0284C7] text-[#0369A1]";
       case "VERIFY":
-        return "bg-emerald-950/70 border-emerald-500/40 text-emerald-300";
+        return "bg-[#EBF3EE] border-2 border-[#5A7D5C] text-[#223326] font-bold";
       case "VERIFY FAILED":
-        return "bg-red-950/80 border-red-500 text-red-300 font-bold animate-pulse";
+        return "bg-[#FEE2E2] border-2 border-[#D9383A] text-[#D9383A] font-bold animate-pulse";
       case "UNDO":
-        return "bg-purple-950/70 border-purple-500/40 text-purple-300";
+        return "bg-[#F3E8FF] border-2 border-[#7E22CE] text-[#7E22CE]";
       case "URGENT_VERIFIED":
-        return "bg-amber-950/70 border-amber-500/40 text-amber-300";
+        return "bg-[#FEF3C7] border-2 border-[#C48B47] text-[#92400E]";
       case "URGENT_FAILED":
-        return "bg-red-950/80 border-red-500 text-red-300";
+        return "bg-[#FEE2E2] border-2 border-[#D9383A] text-[#D9383A]";
       default:
-        return "bg-gray-800 border-gray-600 text-gray-300";
+        return "bg-[#F4F8F5] border-2 border-[#BDCEBF] text-[#223326]";
     }
   };
 
   return (
-    <div className="bg-[#11161f] border border-[#1f2937] rounded-lg p-5">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <Link2 className="w-4 h-4 text-cyan-400" />
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-200 font-mono">
-            Cryptographic Audit Chain ({blocks.length} Blocks)
-          </h2>
-        </div>
+    <div className="bg-white border-2 border-[#4A6150] rounded-xl overflow-hidden shadow-cardFrame flex flex-col">
+      {/* Box Header Bar */}
+      <div className="bg-[#E2ECE5] border-b-2 border-[#4A6150]/30 px-5 py-3.5 flex items-center justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-[#223326] font-mono">
+          Cryptographic Audit Chain ({blocks.length} Blocks)
+        </h2>
         <div className="flex items-center gap-2 text-xs font-mono">
           {chainValid ? (
-            <span className="inline-flex items-center gap-1 text-emerald-400 font-medium">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              Links Intact
+            <span className="px-3 py-1 rounded border-2 border-[#5A7D5C] bg-[#EBF3EE] text-[#5A7D5C] font-bold">
+              [LINKS INTACT]
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-red-400 font-bold animate-pulse">
-              <AlertOctagon className="w-3.5 h-3.5" />
-              Broken at Block #{brokenAt}
+            <span className="px-3 py-1 rounded border-2 border-[#D9383A] bg-[#FEE2E2] text-[#D9383A] font-bold animate-pulse">
+              [BROKEN AT BLOCK #{brokenAt}]
             </span>
           )}
         </div>
       </div>
 
-      {blocks.length === 0 ? (
-        <div className="p-6 border border-dashed border-[#1f2937] rounded text-center text-xs font-mono text-gray-500">
-          Genesis block pending. Ingest evidence to begin audit ledger.
-        </div>
-      ) : (
-        <div className="overflow-x-auto pb-3 custom-scrollbar flex items-center gap-3">
-          {blocks.map((block, idx) => {
-            const isBroken = brokenAt === static_cast_int(block.index);
+      <div className="p-5">
+        {blocks.length === 0 ? (
+          <div className="p-8 border-2 border-dashed border-[#BDCEBF] rounded-lg text-center text-xs font-mono text-[#5A6B5E] bg-[#F4F8F5]">
+            Genesis block pending. Ingest evidence to begin audit ledger.
+          </div>
+        ) : (
+          <div className="overflow-x-auto pb-4 custom-scrollbar flex items-center gap-3">
+            {blocks.map((block, idx) => {
+              const isBroken = brokenAt === block.index;
 
-            return (
-              <React.Fragment key={block.index}>
-                <div
-                  className={`min-w-[240px] max-w-[260px] p-3.5 rounded-lg border text-xs font-mono flex flex-col justify-between transition-all ${
-                    isBroken
-                      ? "bg-red-950/60 border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)] glow-red"
-                      : "bg-[#0a0e14] border-[#1f2937] hover:border-cyan-500/40"
-                  }`}
-                >
-                  {/* Block Header */}
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="font-bold text-gray-200">
-                      Block #{block.index}
-                    </span>
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] border ${getActionBadgeClass(
-                        block.action
-                      )}`}
-                    >
-                      {block.action}
-                    </span>
-                  </div>
-
-                  {/* Details */}
-                  <div className="text-[11px] text-gray-300 font-medium truncate mb-2" title={block.details}>
-                    {block.details}
-                  </div>
-
-                  {/* Hash links */}
-                  <div className="space-y-1 text-[10px] text-gray-400 pt-2 border-t border-[#1f2937]/70">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Prev:</span>
-                      <span className="text-gray-400 truncate max-w-[140px]" title={block.prevHash}>
-                        {block.prevHash === "GENESIS" ? "GENESIS" : `${block.prevHash.slice(0, 8)}...`}
+              return (
+                <React.Fragment key={block.index}>
+                  <div
+                    className={`min-w-[270px] max-w-[290px] p-4 rounded-lg border-2 text-xs font-mono flex flex-col justify-between transition-all shadow-sm ${
+                      isBroken
+                        ? "bg-[#FDF2F2] border-[#D9383A] glow-red"
+                        : "bg-[#F4F8F5] border-[#BDCEBF] hover:border-[#223326]"
+                    }`}
+                  >
+                    {/* Block Header */}
+                    <div className="flex items-center justify-between mb-2 pb-1.5 border-b-2 border-[#BDCEBF]/60">
+                      <span className="font-bold text-[#223326] text-sm">
+                        Block #{block.index}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${getActionBadgeClass(
+                          block.action
+                        )}`}
+                      >
+                        {block.action}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-500">Hash:</span>
-                      <span className="text-cyan-400/90 truncate max-w-[140px]" title={block.hash}>
-                        {block.hash.slice(0, 8)}...
-                      </span>
+
+                    {/* Details */}
+                    <div className="text-[11px] text-[#223326] font-bold truncate mb-2.5" title={block.details}>
+                      {block.details}
                     </div>
+
+                    {/* Hash links */}
+                    <div className="space-y-1.5 text-[10px] text-[#5A6B5E] pt-2 border-t-2 border-[#BDCEBF]/60">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#5A6B5E] font-medium">Prev:</span>
+                        <span className="text-[#223326] font-mono font-bold truncate max-w-[150px]" title={block.prevHash}>
+                          {block.prevHash === "GENESIS" ? "GENESIS" : `${block.prevHash.slice(0, 8)}...`}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-[#5A6B5E] font-medium">Hash:</span>
+                        <span className="text-[#223326] font-mono font-bold truncate max-w-[150px]" title={block.hash}>
+                          {block.hash.slice(0, 8)}...
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Timestamp & Alert */}
+                    <div className="mt-2 text-[9px] text-[#5A6B5E] text-right font-mono font-medium">
+                      {block.timestamp.slice(11, 19)} UTC
+                    </div>
+
+                    {isBroken && (
+                      <div className="mt-2 text-[10px] text-[#D9383A] font-bold bg-[#FEE2E2] p-1.5 rounded text-center border-2 border-[#D9383A]">
+                        LINK CONTINUITY BROKEN
+                      </div>
+                    )}
                   </div>
 
-                  {/* Timestamp & Alert */}
-                  <div className="mt-2 text-[9px] text-gray-500 text-right">
-                    {block.timestamp.slice(11, 19)} UTC
-                  </div>
-
-                  {isBroken && (
-                    <div className="mt-2 text-[10px] text-red-400 font-bold bg-red-950/90 p-1 rounded text-center border border-red-500/60">
-                      ⚠️ HASH LINK BROKEN
-                    </div>
+                  {idx < blocks.length - 1 && (
+                    <span className="text-base font-bold text-[#5A7D5C] px-1 flex-shrink-0">
+                      →
+                    </span>
                   )}
-                </div>
-
-                {idx < blocks.length - 1 && (
-                  <ArrowRight className="w-4 h-4 text-cyan-500/50 flex-shrink-0" />
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-      )}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        )}
+      </div>
     </div>
   );
-}
-
-function static_cast_int(num: number): number {
-  return num;
 }
