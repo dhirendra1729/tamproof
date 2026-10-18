@@ -1,0 +1,5 @@
+Case #2026-X89 Evidence Note
+Investigator: Det. R. Vance
+Subject: Incident Report regarding unauthorized server access.
+All cryptographic hashes must match verified lab records.
+Integrity level: CONFIDENTIAL
