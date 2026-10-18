@@ -1,12 +1,20 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { MerkleNodeData } from "@/lib/types";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { Play, RotateCcw, FolderPlus, GitFork, AlertTriangle, ShieldCheck } from "lucide-react";
+import { MerkleNodeData, VerifyResult } from "@/lib/types";
+import { loadSampleEvidenceFiles } from "./sampleLoader";
 
 interface MerkleTreeViewProps {
   tree: MerkleNodeData | null;
   brokenPath?: number[];
   merkleRoot: string;
+  verifyResult: VerifyResult | null;
+  isVerifying: boolean;
+  fileCount: number;
+  onVerify: () => void;
+  onFilesSelected: (files: { name: string; base64: string }[]) => void;
 }
 
 interface VisualNode {
@@ -17,8 +25,6 @@ interface VisualNode {
   y: number;
   depth: number;
   isLeaf: boolean;
-  left?: MerkleNodeData | null;
-  right?: MerkleNodeData | null;
 }
 
 interface VisualEdge {
@@ -32,13 +38,32 @@ export function MerkleTreeView({
   tree,
   brokenPath = [],
   merkleRoot,
+  verifyResult,
+  isVerifying,
+  fileCount,
+  onVerify,
+  onFilesSelected,
 }: MerkleTreeViewProps) {
   const [hoveredNode, setHoveredNode] = useState<VisualNode | null>(null);
+  const [loadingSamples, setLoadingSamples] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+
+  const handleLoadSamples = async () => {
+    try {
+      setLoadingSamples(true);
+      const files = await loadSampleEvidenceFiles();
+      onFilesSelected(files);
+    } catch (err) {
+      console.error("Failed to load sample evidence:", err);
+    } finally {
+      setLoadingSamples(false);
+    }
+  };
 
   // Layout calculation
   const { nodes, edges, width, height } = useMemo(() => {
     if (!tree) {
-      return { nodes: [], edges: [], width: 700, height: 440 };
+      return { nodes: [], edges: [], width: 780, height: 500 };
     }
 
     let leafCounter = 0;
@@ -55,7 +80,7 @@ export function MerkleTreeView({
     assignLeafX(tree);
 
     const totalLeaves = Math.max(leafCounter, 1);
-    const canvasWidth = Math.max(totalLeaves * 160, 700);
+    const canvasWidth = Math.max(totalLeaves * 160, 780);
     const leafSpacing = canvasWidth / (totalLeaves + 1);
 
     const nodeList: VisualNode[] = [];
@@ -81,11 +106,13 @@ export function MerkleTreeView({
           x = rightV.x;
         }
 
+        const currentNodeY = 70 + depth * 95;
+
         if (leftV) {
           const isEdgeBroken = brokenSet.has(node.id) && brokenSet.has(leftV.id);
           const hop = brokenPath.indexOf(leftV.id);
           edgeList.push({
-            from: { id: node.id, hash: node.hash, leafIndex: node.leafIndex, x, y: 50 + depth * 80, depth, isLeaf },
+            from: { id: node.id, hash: node.hash, leafIndex: node.leafIndex, x, y: currentNodeY, depth, isLeaf },
             to: leftV,
             isBroken: isEdgeBroken,
             hopIndex: hop,
@@ -95,7 +122,7 @@ export function MerkleTreeView({
           const isEdgeBroken = brokenSet.has(node.id) && brokenSet.has(rightV.id);
           const hop = brokenPath.indexOf(rightV.id);
           edgeList.push({
-            from: { id: node.id, hash: node.hash, leafIndex: node.leafIndex, x, y: 50 + depth * 80, depth, isLeaf },
+            from: { id: node.id, hash: node.hash, leafIndex: node.leafIndex, x, y: currentNodeY, depth, isLeaf },
             to: rightV,
             isBroken: isEdgeBroken,
             hopIndex: hop,
@@ -103,7 +130,7 @@ export function MerkleTreeView({
         }
       }
 
-      const y = 50 + depth * 80;
+      const y = 70 + depth * 95;
       const vNode: VisualNode = {
         id: node.id,
         hash: node.hash,
@@ -119,186 +146,268 @@ export function MerkleTreeView({
 
     layout(tree, 0);
     const maxDepth = Math.max(...nodeList.map((n) => n.depth), 0);
-    const canvasHeight = Math.max(50 + (maxDepth + 1) * 85 + 35, 440);
+    const canvasHeight = Math.max(70 + (maxDepth + 1) * 95 + 45, 500);
 
     return { nodes: nodeList, edges: edgeList, width: canvasWidth, height: canvasHeight };
   }, [tree, brokenPath]);
 
   const brokenPathSet = useMemo(() => new Set(brokenPath), [brokenPath]);
+  const hasTamper = brokenPath.length > 0;
+
+  const rootBefore = verifyResult?.rootBefore;
+  const rootAfter = verifyResult?.rootAfter;
+  const hasRootMismatch = Boolean(rootBefore && rootAfter && rootBefore !== rootAfter);
 
   return (
-    <div className="bg-white border-2 border-[#4A6150] rounded-xl overflow-hidden shadow-cardFrame flex flex-col justify-between h-full min-h-[480px] relative">
-      {/* Panel Header */}
-      <div className="bg-[#E2ECE5] border-b-2 border-[#4A6150]/30 px-5 py-3.5 flex items-center justify-between">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-[#223326] font-mono">
-          Merkle Tree Visualizer
-        </h2>
-        <div className="flex items-center gap-2 text-xs font-mono">
-          {brokenPath.length > 0 ? (
-            <span className="text-[#D9383A] font-bold px-2 py-0.5 rounded bg-[#FEE2E2] border-2 border-[#D9383A] animate-pulse">
-              CORRUPTED PATH: [{brokenPath.join(" → ")}]
-            </span>
-          ) : (
-            <span className="text-[#5A6B5E] font-bold px-2 py-0.5 rounded bg-white border border-[#BDCEBF]">
-              Root: {merkleRoot ? `${merkleRoot.slice(0, 10)}...` : "None"}
-            </span>
-          )}
+    <div className="bg-white border-2 border-[#4A6150] rounded-xl overflow-hidden shadow-cardFrame flex flex-col justify-between h-full min-h-[560px] lg:min-h-[600px] relative select-none">
+      {/* Panel Header Bar with Primary Verify Button & Root Chip */}
+      <div className="bg-[#E2ECE5] border-b-2 border-[#BDCEBF] px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 className="text-base font-bold uppercase tracking-wider text-[#223326] font-mono">
+            Merkle Tree Visualizer
+          </h2>
+          <p className="text-xs text-[#5A6B5E] font-sans mt-0.5 font-medium">
+            Binary commitment tree computed by C++17 core engine
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {/* Animated Root Hash Chip */}
+          <div className="px-3.5 py-2 rounded-lg border-2 border-[#BDCEBF] bg-[#F4F8F5] text-xs font-mono flex items-center gap-2 shadow-sm">
+            <span className="text-[#5A6B5E] font-bold text-[11px]">Root:</span>
+            {hasRootMismatch ? (
+              <div className="flex items-center gap-1 font-bold">
+                <span className="line-through text-[#D9383A]/70">{rootBefore?.slice(0, 8)}...</span>
+                <span className="text-[#D9383A]">→</span>
+                <span className="text-[#D9383A]">{rootAfter?.slice(0, 8)}...</span>
+              </div>
+            ) : (
+              <span className="text-[#223326] font-bold">
+                {merkleRoot ? `${merkleRoot.slice(0, 8)}...${merkleRoot.slice(-8)}` : "None"}
+              </span>
+            )}
+          </div>
+
+          {/* Primary Call to Action Button */}
+          <button
+            onClick={onVerify}
+            disabled={isVerifying || fileCount === 0}
+            className={`px-5 py-2.5 rounded-lg border-2 font-mono font-bold text-xs uppercase tracking-wider transition-all shadow-sm flex items-center gap-2 ${
+              hasTamper
+                ? "bg-[#D9383A] hover:bg-[#B91C1C] border-[#D9383A] text-white animate-pulse"
+                : "bg-[#223326] hover:bg-[#5A7D5C] border-[#223326] hover:border-[#5A7D5C] text-white"
+            } disabled:opacity-40 disabled:cursor-not-allowed`}
+          >
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>{isVerifying ? "Verifying..." : "Run Integrity Check"}</span>
+          </button>
         </div>
       </div>
 
-      {/* SVG Canvas Box */}
-      <div className="p-5 flex-1 flex flex-col">
+      {/* SVG Canvas Area */}
+      <div className="p-6 flex-1 flex flex-col justify-center">
         {!tree ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-8 border-2 border-dashed border-[#BDCEBF] rounded-lg text-center bg-[#F4F8F5]">
-            <p className="text-sm font-mono text-[#223326] font-bold">No Merkle Tree Constructed</p>
-            <p className="text-xs font-mono text-[#5A6B5E] mt-1">
-              Ingest evidence files to generate binary tree commitments.
+          <div className="flex-1 flex flex-col items-center justify-center p-10 border-2 border-[#BDCEBF] rounded-xl text-center bg-[#F4F8F5]">
+            <GitFork className="w-10 h-10 text-[#5A7D5C] mb-3 stroke-[1.5]" />
+            <h3 className="text-base font-mono font-bold text-[#223326]">
+              No Merkle Tree Constructed Yet
+            </h3>
+            <p className="text-xs text-[#5A6B5E] font-sans mt-1.5 max-w-md">
+              Ingest evidence records to trigger the C++ binary tree commitment engine and build live verification proofs.
             </p>
+            <button
+              onClick={handleLoadSamples}
+              disabled={loadingSamples}
+              className="mt-5 px-6 py-2.5 rounded-lg border-2 border-[#5A7D5C] bg-white hover:bg-[#EBF3EE] text-xs font-mono font-bold text-[#223326] transition-colors shadow-sm flex items-center gap-2"
+            >
+              <FolderPlus className="w-4 h-4 text-[#5A7D5C]" />
+              <span>{loadingSamples ? "Loading..." : "Load Sample Evidence"}</span>
+            </button>
           </div>
         ) : (
-          <div className="flex-1 w-full overflow-auto custom-scrollbar border-2 border-[#BDCEBF] rounded-lg bg-[#F4F8F5] p-3 relative">
+          <div className="flex-1 w-full overflow-auto custom-scrollbar border-2 border-[#BDCEBF] rounded-xl bg-[#F4F8F5] p-4 relative">
             <svg
               viewBox={`0 0 ${width} ${height}`}
-              className="w-full h-full min-h-[380px]"
+              className="w-full h-full min-h-[440px]"
               style={{ minWidth: `${width}px` }}
             >
-            {/* Render Edges */}
-            {edges.map((edge, idx) => {
-              const isBroken = edge.isBroken;
+              {/* Render Edges */}
+              {edges.map((edge, idx) => {
+                const isBroken = edge.isBroken;
+                const hopIndex = Math.max(edge.hopIndex, 0);
+                const delay = shouldReduceMotion ? 0 : hopIndex * 0.35;
 
-              return (
-                <line
-                  key={`edge-${idx}-${edge.from.id}-${edge.to.id}`}
-                  x1={edge.from.x}
-                  y1={edge.from.y}
-                  x2={edge.to.x}
-                  y2={edge.to.y}
-                  stroke={isBroken ? "#D9383A" : "#BDCEBF"}
-                  strokeWidth={isBroken ? 3.5 : 2}
-                  className="transition-colors duration-300"
-                />
-              );
-            })}
+                return (
+                  <g key={`edge-group-${idx}-${edge.from.id}-${edge.to.id}`}>
+                    <motion.line
+                      x1={edge.from.x}
+                      y1={edge.from.y}
+                      x2={edge.to.x}
+                      y2={edge.to.y}
+                      stroke={isBroken ? "#D9383A" : "#BDCEBF"}
+                      strokeWidth={isBroken ? 3.5 : 2}
+                      initial={hasTamper && isBroken && !shouldReduceMotion ? { stroke: "#BDCEBF", strokeWidth: 2 } : {}}
+                      animate={{
+                        stroke: isBroken ? "#D9383A" : "#BDCEBF",
+                        strokeWidth: isBroken ? 3.5 : 2,
+                        opacity: hasTamper && !isBroken ? 0.4 : 1,
+                      }}
+                      transition={{ delay, duration: 0.3 }}
+                    />
 
-            {/* Render Nodes */}
-            {nodes.map((node) => {
-              const isBroken = brokenPathSet.has(node.id);
-              const isRoot = node.id === tree.id;
+                    {/* Traveling signal circle along broken edge */}
+                    {isBroken && !shouldReduceMotion && (
+                      <motion.circle
+                        r={4.5}
+                        fill="#D9383A"
+                        initial={{ cx: edge.to.x, cy: edge.to.y, opacity: 0 }}
+                        animate={{
+                          cx: [edge.to.x, edge.from.x],
+                          cy: [edge.to.y, edge.from.y],
+                          opacity: [0, 1, 0],
+                        }}
+                        transition={{
+                          delay,
+                          duration: 0.5,
+                          repeat: Infinity,
+                          repeatDelay: 1.5,
+                        }}
+                      />
+                    )}
+                  </g>
+                );
+              })}
 
-              return (
-                <g
-                  key={`node-${node.id}`}
-                  className="cursor-pointer"
-                  onMouseEnter={() => setHoveredNode(node)}
-                  onMouseLeave={() => setHoveredNode(null)}
-                >
-                  {/* Outer pulsating ring for broken nodes */}
-                  {isBroken && (
-                    <circle
+              {/* Render Nodes with r=22 (larger, projector-ready) */}
+              {nodes.map((node) => {
+                const isBroken = brokenPathSet.has(node.id);
+                const hopIndex = Math.max(brokenPath.indexOf(node.id), 0);
+                const delay = shouldReduceMotion ? 0 : hopIndex * 0.35;
+                const isRoot = node.id === tree.id;
+
+                return (
+                  <motion.g
+                    key={`node-${node.id}`}
+                    layout={!shouldReduceMotion}
+                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                    className="cursor-pointer"
+                    onMouseEnter={() => setHoveredNode(node)}
+                    onMouseLeave={() => setHoveredNode(null)}
+                    animate={{
+                      opacity: hasTamper && !isBroken ? 0.4 : 1,
+                    }}
+                  >
+                    {/* Pulsating ring for broken nodes */}
+                    {isBroken && (
+                      <motion.circle
+                        cx={node.x}
+                        cy={node.y}
+                        r={30}
+                        fill="none"
+                        stroke="#D9383A"
+                        strokeWidth={2}
+                        initial={shouldReduceMotion ? {} : { scale: 0.8, opacity: 0 }}
+                        animate={shouldReduceMotion ? { opacity: 0.8 } : { scale: [1, 1.3, 1], opacity: [0.9, 0.2, 0.9] }}
+                        transition={{ delay, repeat: Infinity, duration: 1.6 }}
+                      />
+                    )}
+
+                    {/* Node Circle (r=22 for clear viewing) */}
+                    <motion.circle
                       cx={node.x}
                       cy={node.y}
-                      r={24}
-                      fill="none"
-                      stroke="#D9383A"
-                      strokeWidth={2}
-                      className="animate-ping origin-center opacity-70"
-                      style={{ transformOrigin: `${node.x}px ${node.y}px` }}
+                      r={22}
+                      fill={isBroken ? "#FEE2E2" : "#FFFFFF"}
+                      stroke={isBroken ? "#D9383A" : "#223326"}
+                      strokeWidth={isBroken ? 3.5 : 2}
+                      initial={hasTamper && isBroken && !shouldReduceMotion ? { scale: 0.9 } : {}}
+                      animate={{ scale: 1 }}
+                      transition={{ delay, duration: 0.25 }}
                     />
-                  )}
 
-                  {/* Main Node Circle */}
-                  <circle
-                    cx={node.x}
-                    cy={node.y}
-                    r={18}
-                    fill={isBroken ? "#FEE2E2" : "#FFFFFF"}
-                    stroke={isBroken ? "#D9383A" : "#223326"}
-                    strokeWidth={isBroken ? 3 : 2}
-                    className="transition-all duration-200"
-                  />
-
-                  {/* Node ID label */}
-                  <text
-                    x={node.x}
-                    y={node.y + 4}
-                    textAnchor="middle"
-                    fill={isBroken ? "#D9383A" : "#223326"}
-                    fontSize="11"
-                    fontFamily="monospace"
-                    fontWeight="bold"
-                  >
-                    #{node.id}
-                  </text>
-
-                  {/* Truncated Hash label beneath node */}
-                  <text
-                    x={node.x}
-                    y={node.y + 32}
-                    textAnchor="middle"
-                    fill={isBroken ? "#D9383A" : "#5A6B5E"}
-                    fontSize="10"
-                    fontFamily="monospace"
-                    fontWeight={isBroken ? "bold" : "normal"}
-                  >
-                    {node.hash.slice(0, 6)}...
-                  </text>
-
-                  {/* Leaf / Root tag */}
-                  {node.isLeaf && (
+                    {/* Node ID label (12px bold) */}
                     <text
                       x={node.x}
-                      y={node.y - 24}
-                      textAnchor="middle"
-                      fill="#5A7D5C"
-                      fontSize="10"
-                      fontFamily="monospace"
-                      fontWeight="bold"
-                    >
-                      Leaf {node.leafIndex}
-                    </text>
-                  )}
-                  {isRoot && (
-                    <text
-                      x={node.x}
-                      y={node.y - 24}
+                      y={node.y + 4}
                       textAnchor="middle"
                       fill={isBroken ? "#D9383A" : "#223326"}
-                      fontSize="11"
+                      fontSize="12"
                       fontFamily="monospace"
                       fontWeight="bold"
                     >
-                      ROOT
+                      #{node.id}
                     </text>
-                  )}
-                </g>
-              );
-            })}
-          </svg>
 
-          {/* Hover Tooltip Overlay */}
-          {hoveredNode && (
-            <div
-              className="absolute pointer-events-none z-20 px-3 py-2 bg-white border-2 border-[#223326] rounded shadow-lg text-xs font-mono"
-              style={{
-                left: Math.min(Math.max(hoveredNode.x - 100, 15), width - 260),
-                top: Math.max(hoveredNode.y - 85, 15),
-              }}
-            >
-              <div className="font-bold text-[#223326] mb-0.5">
-                Node #{hoveredNode.id} {hoveredNode.isLeaf ? `(Leaf ${hoveredNode.leafIndex})` : "(Internal Hash)"}
-              </div>
-              <div className="text-[10px] text-[#5A6B5E] break-all">
-                Hash: <span className="text-[#223326] font-bold">{hoveredNode.hash}</span>
-              </div>
-              {brokenPathSet.has(hoveredNode.id) && (
-                <div className="text-[10px] text-[#D9383A] font-bold mt-1">
-                  ON CORRUPTED INTEGRITY PATH
+                    {/* Truncated Hash label beneath node (11px mono) */}
+                    <text
+                      x={node.x}
+                      y={node.y + 36}
+                      textAnchor="middle"
+                      fill={isBroken ? "#D9383A" : "#5A6B5E"}
+                      fontSize="11"
+                      fontFamily="monospace"
+                      fontWeight={isBroken ? "bold" : "600"}
+                    >
+                      {node.hash.slice(0, 6)}...
+                    </text>
+
+                    {/* Leaf / Root Tag */}
+                    {node.isLeaf && (
+                      <text
+                        x={node.x}
+                        y={node.y - 28}
+                        textAnchor="middle"
+                        fill="#5A7D5C"
+                        fontSize="11"
+                        fontFamily="monospace"
+                        fontWeight="bold"
+                      >
+                        Leaf {node.leafIndex}
+                      </text>
+                    )}
+                    {isRoot && (
+                      <text
+                        x={node.x}
+                        y={node.y - 28}
+                        textAnchor="middle"
+                        fill={isBroken ? "#D9383A" : "#223326"}
+                        fontSize="12"
+                        fontFamily="monospace"
+                        fontWeight="black"
+                      >
+                        ROOT
+                      </text>
+                    )}
+                  </motion.g>
+                );
+              })}
+            </svg>
+
+            {/* Hover Tooltip Overlay */}
+            {hoveredNode && (
+              <div
+                className="absolute pointer-events-none z-20 px-4 py-2.5 bg-white border-2 border-[#223326] rounded-lg shadow-lg text-xs font-mono"
+                style={{
+                  left: Math.min(Math.max(hoveredNode.x - 110, 15), width - 290),
+                  top: Math.max(hoveredNode.y - 95, 15),
+                }}
+              >
+                <div className="font-bold text-[#223326] mb-1">
+                  Node #{hoveredNode.id} {hoveredNode.isLeaf ? `(Leaf ${hoveredNode.leafIndex})` : "(Internal Combined Hash)"}
                 </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+                <div className="text-[11px] text-[#5A6B5E] break-all leading-relaxed">
+                  Hash: <span className="text-[#223326] font-bold">{hoveredNode.hash}</span>
+                </div>
+                {brokenPathSet.has(hoveredNode.id) && (
+                  <div className="text-[11px] text-[#D9383A] font-bold mt-1.5 flex items-center gap-1">
+                    <AlertTriangle className="w-3.5 h-3.5 text-[#D9383A]" />
+                    <span>ON CORRUPTED INTEGRITY PATH</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
