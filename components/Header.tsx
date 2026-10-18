@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Shield, ShieldAlert, ShieldCheck, RefreshCw, RotateCcw, Cpu } from "lucide-react";
 import { VaultState, VerifyResult } from "@/lib/types";
 
 interface HeaderProps {
@@ -37,77 +36,67 @@ export function Header({
       : displayedRoot;
 
   return (
-    <header className="border-b border-[#1f2937] bg-[#11161f]/90 backdrop-blur-md sticky top-0 z-50 px-6 py-4">
+    <header className="border-b-2 border-[#4A6150]/40 bg-white sticky top-0 z-50 px-6 py-4 shadow-sm">
       {vaultState?.coreRestarted && (
-        <div className="mb-3 px-4 py-2 bg-amber-950/60 border border-amber-600/50 rounded text-amber-300 text-xs flex items-center justify-between">
-          <span>⚠️ Notice: C++ core process was restarted. In-memory state was reset.</span>
+        <div className="mb-3 px-4 py-2 bg-[#FEF3C7] border-2 border-[#F59E0B] rounded-lg text-[#92400E] text-xs font-mono font-medium flex items-center justify-between">
+          <span>Notice: C++ core process was restarted. In-memory state was reset to genesis.</span>
         </div>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        {/* Title and Tech Badges */}
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-cyan-950/60 border border-cyan-500/30 text-cyan-400">
-            {isTampered ? (
-              <ShieldAlert className="w-6 h-6 text-red-400 animate-pulse" />
-            ) : (
-              <ShieldCheck className="w-6 h-6 text-cyan-400" />
-            )}
+      <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Title and Engineering Subtitle */}
+        <div>
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-black tracking-tight text-[#223326] font-mono">
+              TAMPER-PROOF EVIDENCE VAULT
+            </h1>
+            <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-[#EBF3EE] border-2 border-[#5A7D5C] text-[#5A7D5C]">
+              C++17 Engine
+            </span>
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold tracking-tight text-white font-mono">
-                TAMPER-PROOF EVIDENCE VAULT
-              </h1>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-mono font-medium bg-cyan-950/70 border border-cyan-500/40 text-cyan-300">
-                <Cpu className="w-3 h-3 text-cyan-400" />
-                core: C++17 (live process)
-              </span>
-            </div>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Forensic custody simulator backed by hand-written Merkle tree, hash chain, and separate-chaining index.
-            </p>
-          </div>
+          <p className="text-xs text-[#5A6B5E] mt-0.5 font-sans font-medium">
+            Forensic Custody Architecture • Binary Merkle Tree &amp; SHA-256 Hash Chain Ledger
+          </p>
         </div>
 
-        {/* Center/Right Status & Controls */}
+        {/* Status Indicators & Controls */}
         <div className="flex flex-wrap items-center gap-3">
-          {/* Vault Status Pill */}
+          {/* Vault Status Indicator */}
           <div
-            className={`px-3 py-1.5 rounded-full border text-xs font-mono font-semibold flex items-center gap-2 ${
+            className={`px-3.5 py-1.5 rounded-lg border-2 text-xs font-mono font-bold flex items-center gap-2 ${
               isTampered
-                ? "bg-red-950/70 border-red-500 text-red-300 glow-red"
+                ? "bg-[#FDF2F2] border-[#D9383A] text-[#D9383A] glow-red"
                 : isIngesting
-                ? "bg-cyan-950/70 border-cyan-400 text-cyan-300 animate-pulse"
-                : "bg-emerald-950/50 border-emerald-500/60 text-emerald-300"
+                ? "bg-[#FEF3C7] border-[#C48B47] text-[#92400E] animate-pulse"
+                : "bg-[#EBF3EE] border-[#5A7D5C] text-[#223326]"
             }`}
           >
             <span
               className={`w-2 h-2 rounded-full ${
                 isTampered
-                  ? "bg-red-400 animate-ping"
+                  ? "bg-[#D9383A] animate-ping"
                   : isIngesting
-                  ? "bg-cyan-400"
-                  : "bg-emerald-400"
+                  ? "bg-[#C48B47]"
+                  : "bg-[#5A7D5C]"
               }`}
             />
             {isTampered
               ? "TAMPER DETECTED"
               : isIngesting
-              ? "INGESTING EVIDENCE..."
+              ? "INGESTING..."
               : "VAULT SECURED"}
           </div>
 
-          {/* Merkle Root Pill */}
-          <div className="px-3 py-1.5 rounded border border-[#1f2937] bg-[#0a0e14] text-xs font-mono flex items-center gap-2">
-            <span className="text-gray-400">Merkle Root:</span>
+          {/* Merkle Root Box */}
+          <div className="px-3.5 py-1.5 rounded-lg border-2 border-[#BDCEBF] bg-[#F4F8F5] text-xs font-mono flex items-center gap-2">
+            <span className="text-[#5A6B5E] font-bold">Root:</span>
             {rootMismatch ? (
-              <span className="text-red-400 font-bold animate-pulse px-1.5 py-0.5 bg-red-950/80 rounded border border-red-500/50">
-                MISMATCH DETECTED
+              <span className="text-[#D9383A] font-bold px-1.5 py-0.5 bg-[#FDF2F2] rounded border border-[#D9383A]">
+                MISMATCH
               </span>
             ) : (
               <span
-                className="text-cyan-300 font-medium cursor-help"
+                className="text-[#223326] font-bold cursor-help"
                 title={displayedRoot}
               >
                 {truncatedRoot}
@@ -119,20 +108,18 @@ export function Header({
           <button
             onClick={onUndo}
             disabled={!vaultState?.stack || vaultState.stack.length === 0}
-            className="px-3 py-1.5 rounded border border-[#1f2937] bg-[#11161f] hover:bg-[#1a2332] disabled:opacity-40 disabled:cursor-not-allowed text-xs font-mono text-gray-300 flex items-center gap-1.5 transition-colors"
-            title="Undo last non-tamper action using LIFO Stack"
+            className="px-3 py-1.5 rounded-lg border-2 border-[#BDCEBF] bg-white hover:bg-[#EBF3EE] hover:border-[#5A7D5C] disabled:opacity-40 disabled:cursor-not-allowed text-xs font-mono font-bold text-[#223326] transition-colors shadow-sm"
+            title="Undo last action via LIFO Stack"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            Undo
+            Undo Action
           </button>
 
           <button
             onClick={onReset}
-            className="px-3 py-1.5 rounded border border-red-900/40 bg-red-950/30 hover:bg-red-900/50 text-xs font-mono text-red-300 flex items-center gap-1.5 transition-colors"
+            className="px-3 py-1.5 rounded-lg border-2 border-[#FCA5A5] bg-[#FDF2F2] hover:bg-[#FEE2E2] text-xs font-mono font-bold text-[#D9383A] transition-colors shadow-sm"
             title="Reset vault state"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            Reset
+            Reset Vault
           </button>
         </div>
       </div>

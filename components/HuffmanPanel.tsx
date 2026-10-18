@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Binary, Gauge, Layers } from "lucide-react";
 import { EvidenceFile } from "@/lib/types";
 
 interface HuffmanPanelProps {
@@ -11,15 +10,22 @@ interface HuffmanPanelProps {
 export function HuffmanPanel({ selectedFile }: HuffmanPanelProps) {
   if (!selectedFile) {
     return (
-      <div className="bg-[#11161f] border border-[#1f2937] rounded-lg p-5 flex flex-col justify-between h-full">
-        <div className="flex items-center gap-2 mb-3">
-          <Binary className="w-4 h-4 text-cyan-400" />
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-200 font-mono">
+      <div className="bg-white border-2 border-[#4A6150] rounded-xl overflow-hidden shadow-cardFrame flex flex-col justify-between h-full">
+        <div className="bg-[#E2ECE5] border-b-2 border-[#4A6150]/30 px-5 py-3.5 flex items-center justify-between">
+          <h2 className="text-sm font-bold uppercase tracking-wider text-[#223326] font-mono">
             Huffman Lossless Compression
           </h2>
+          <span className="text-[11px] font-mono font-bold text-[#5A6B5E] px-2 py-0.5 rounded bg-white border border-[#BDCEBF]">
+            MinHeap Tree
+          </span>
         </div>
-        <div className="flex-1 flex flex-col items-center justify-center p-6 border border-dashed border-[#1f2937] rounded text-center text-xs font-mono text-gray-500">
-          Select an evidence file above to inspect its Huffman binary tree encoding.
+        <div className="p-5 flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col items-center justify-center p-8 border-2 border-dashed border-[#BDCEBF] rounded-lg text-center bg-[#F4F8F5]">
+            <p className="text-sm font-mono text-[#223326] font-bold">No File Selected</p>
+            <p className="text-xs font-mono text-[#5A6B5E] mt-1">
+              Select an evidence file from the records table to inspect its Huffman binary tree encoding.
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -33,7 +39,6 @@ export function HuffmanPanel({ selectedFile }: HuffmanPanelProps) {
     ? Math.max(0, Math.round((1 - compressedBytes / originalBytes) * 100))
     : 0;
 
-  // Sample prefix code table preview for UI demonstration
   const sampleCodes = [
     { char: "space (' ')", freq: "18%", code: "01" },
     { char: "letter 'e'", freq: "12%", code: "100" },
@@ -46,49 +51,46 @@ export function HuffmanPanel({ selectedFile }: HuffmanPanelProps) {
   ];
 
   return (
-    <div className="bg-[#11161f] border border-[#1f2937] rounded-lg p-5 flex flex-col justify-between h-full">
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Binary className="w-4 h-4 text-cyan-400" />
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-200 font-mono">
-              Huffman Coding: {selectedFile.name}
-            </h2>
-          </div>
-          <span className="text-[11px] font-mono text-gray-400 flex items-center gap-1">
-            <Layers className="w-3.5 h-3.5 text-cyan-400" />
-            Constructed with MinHeap
-          </span>
-        </div>
+    <div className="bg-white border-2 border-[#4A6150] rounded-xl overflow-hidden shadow-cardFrame flex flex-col justify-between h-full">
+      {/* Box Header */}
+      <div className="bg-[#E2ECE5] border-b-2 border-[#4A6150]/30 px-5 py-3.5 flex items-center justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-[#223326] font-mono truncate max-w-[320px]">
+          Huffman: {selectedFile.name}
+        </h2>
+        <span className="text-[11px] font-mono font-bold text-[#5A7D5C] px-2.5 py-0.5 rounded bg-white border border-[#5A7D5C]">
+          MinHeap Priority Queue
+        </span>
+      </div>
 
+      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
         {/* Compression Metrics Grid */}
-        <div className="grid grid-cols-3 gap-2 mb-4 font-mono text-xs">
-          <div className="p-2.5 rounded bg-[#0a0e14] border border-[#1f2937]">
-            <span className="text-gray-500 text-[10px] block">ORIGINAL</span>
-            <span className="text-white font-bold text-sm">{originalBytes}</span>
-            <span className="text-gray-400 text-[10px] ml-1">bytes</span>
+        <div className="grid grid-cols-3 gap-3 font-mono text-xs">
+          <div className="p-3.5 rounded-lg bg-[#F4F8F5] border-2 border-[#BDCEBF]">
+            <span className="text-[#5A6B5E] text-[10px] block font-sans font-bold uppercase">ORIGINAL</span>
+            <span className="text-[#223326] font-bold text-base">{originalBytes}</span>
+            <span className="text-[#5A6B5E] text-[10px] ml-1">bytes</span>
           </div>
-          <div className="p-2.5 rounded bg-[#0a0e14] border border-[#1f2937]">
-            <span className="text-gray-500 text-[10px] block">COMPRESSED</span>
-            <span className="text-cyan-300 font-bold text-sm">{compressedBits}</span>
-            <span className="text-gray-400 text-[10px] ml-1">bits ({compressedBytes} B)</span>
+          <div className="p-3.5 rounded-lg bg-[#EBF3EE] border-2 border-[#5A7D5C]">
+            <span className="text-[#5A7D5C] text-[10px] block font-sans font-bold uppercase">COMPRESSED</span>
+            <span className="text-[#223326] font-bold text-base">{compressedBits}</span>
+            <span className="text-[#5A6B5E] text-[10px] ml-1">bits ({compressedBytes} B)</span>
           </div>
-          <div className="p-2.5 rounded bg-[#0a0e14] border border-[#1f2937]">
-            <span className="text-gray-500 text-[10px] block">SPACE SAVINGS</span>
-            <span className="text-emerald-400 font-bold text-sm">{spaceSavingsPct}%</span>
-            <span className="text-gray-400 text-[10px] ml-1">({ratio.toFixed(2)}x)</span>
+          <div className="p-3.5 rounded-lg bg-[#FEF3C7] border-2 border-[#C48B47]">
+            <span className="text-[#92400E] text-[10px] block font-sans font-bold uppercase">SPACE SAVINGS</span>
+            <span className="text-[#C48B47] font-bold text-base">{spaceSavingsPct}%</span>
+            <span className="text-[#92400E] text-[10px] ml-1">({ratio.toFixed(2)}x)</span>
           </div>
         </div>
 
         {/* Compression Ratio Bar */}
-        <div className="mb-4">
-          <div className="flex justify-between text-[11px] font-mono text-gray-400 mb-1">
+        <div>
+          <div className="flex justify-between text-xs font-mono text-[#5A6B5E] mb-1.5 font-bold">
             <span>Compression Ratio</span>
-            <span className="text-cyan-300 font-semibold">{ratio.toFixed(2)}x of original</span>
+            <span className="text-[#5A7D5C]">{ratio.toFixed(2)}x of original</span>
           </div>
-          <div className="h-2 w-full bg-[#0a0e14] rounded-full overflow-hidden border border-[#1f2937]">
+          <div className="h-3 w-full bg-[#BDCEBF]/40 rounded-full overflow-hidden border-2 border-[#BDCEBF]">
             <div
-              className="h-full bg-gradient-to-r from-cyan-500 to-emerald-400 transition-all duration-500"
+              className="h-full bg-[#5A7D5C] transition-all duration-500 rounded-full"
               style={{ width: `${Math.min(100, Math.max(10, ratio * 100))}%` }}
             />
           </div>
@@ -96,17 +98,17 @@ export function HuffmanPanel({ selectedFile }: HuffmanPanelProps) {
 
         {/* Code Table Preview */}
         <div>
-          <span className="text-[11px] font-mono text-gray-400 block mb-2">
+          <span className="text-xs font-mono text-[#223326] block mb-2 font-bold uppercase tracking-wider">
             Prefix Code Table (Top Symbols):
           </span>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 font-mono text-[10px]">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-[10px]">
             {sampleCodes.map((item, idx) => (
               <div
                 key={idx}
-                className="p-1.5 rounded bg-[#0a0e14] border border-[#1f2937] flex flex-col justify-between"
+                className="p-2.5 rounded-lg bg-[#F4F8F5] border-2 border-[#BDCEBF] flex flex-col justify-between shadow-sm"
               >
-                <span className="text-gray-400 truncate">{item.char}</span>
-                <span className="text-cyan-400 font-bold mt-0.5">{item.code}</span>
+                <span className="text-[#5A6B5E] truncate font-medium">{item.char}</span>
+                <span className="text-[#223326] font-bold text-xs mt-1">{item.code}</span>
               </div>
             ))}
           </div>
