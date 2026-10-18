@@ -37,7 +37,7 @@ export default function ForensicVaultDashboard() {
     null;
 
   return (
-    <div className="min-h-screen bg-[#0a0e14] text-[#e5e7eb] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F2F7F4] text-[#223326] flex flex-col font-sans selection:bg-[#5A7D5C]/20 selection:text-[#223326]">
       {/* 1. Header with Live Status & Merkle Root */}
       <Header
         vaultState={vaultState}
@@ -47,36 +47,44 @@ export default function ForensicVaultDashboard() {
         onUndo={undo}
       />
 
-      {/* Main Dashboard Container */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 sm:p-6 space-y-6">
-        {/* Verification Trigger Banner */}
-        <VerifyButton
-          onVerify={runVerify}
-          isLoading={isLoading}
-          verifyResult={verifyResult}
-          fileCount={vaultState?.files.length || 0}
-        />
+      {/* Main Spacious Dashboard Container */}
+      <main className="flex-1 max-w-[1600px] w-full mx-auto px-4 sm:px-8 py-8 space-y-8">
+        
+        {/* Verification Command Bar */}
+        <section>
+          <VerifyButton
+            onVerify={runVerify}
+            isLoading={isLoading}
+            verifyResult={verifyResult}
+            fileCount={vaultState?.files.length || 0}
+          />
+        </section>
 
-        {/* Row 1: Dropzone + Evidence List (Left), Merkle Tree Hero (Center 55%), DS Inspector (Right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          {/* Left Column (3.5 cols): Dropzone + Evidence Records */}
-          <div className="lg:col-span-4 flex flex-col gap-6">
+        {/* SECTION 1: INGESTION & EVIDENCE RECORDS (Spacious 2-Column Grid) */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Left: Dropzone (5 cols) */}
+          <div className="lg:col-span-5 flex flex-col">
             <Dropzone
               onFilesSelected={ingestFiles}
               isIngesting={isIngesting}
             />
-            <div className="flex-1">
-              <EvidenceList
-                files={vaultState?.files || []}
-                selectedFileId={selectedFile?.id || null}
-                onSelectFile={selectFile}
-                onFlagUrgent={flagUrgent}
-              />
-            </div>
           </div>
 
-          {/* Center Column (5.5 cols): Hero Merkle Tree View */}
-          <div className="lg:col-span-5 flex flex-col">
+          {/* Right: Evidence Records Table (7 cols) */}
+          <div className="lg:col-span-7 flex flex-col">
+            <EvidenceList
+              files={vaultState?.files || []}
+              selectedFileId={selectedFile?.id || null}
+              onSelectFile={selectFile}
+              onFlagUrgent={flagUrgent}
+            />
+          </div>
+        </section>
+
+        {/* SECTION 2: MERKLE TREE COMMITMENT & DS INSPECTOR (Spacious 8 + 4 Grid) */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {/* Center-Left Hero: Merkle Tree Visualizer (8 cols) */}
+          <div className="lg:col-span-8 flex flex-col">
             <MerkleTreeView
               tree={vaultState?.merkleTree || null}
               brokenPath={verifyResult?.brokenPath || []}
@@ -84,8 +92,8 @@ export default function ForensicVaultDashboard() {
             />
           </div>
 
-          {/* Right Column (2.5 cols): DS Inspector */}
-          <div className="lg:col-span-3 flex flex-col">
+          {/* Right: Data Structure Inspector (4 cols) */}
+          <div className="lg:col-span-4 flex flex-col">
             <DSInspector
               stack={vaultState?.stack || []}
               queue={vaultState?.queue || []}
@@ -93,33 +101,37 @@ export default function ForensicVaultDashboard() {
               onProcessUrgent={processUrgent}
             />
           </div>
-        </div>
+        </section>
 
-        {/* Row 2: HashChain Timeline */}
-        <HashChainView
-          blocks={vaultState?.chain || []}
-          brokenAt={verifyResult?.brokenAt ?? -1}
-          chainValid={vaultState?.chainValid ?? true}
-        />
+        {/* SECTION 3: AUDIT LEDGER */}
+        <section>
+          <HashChainView
+            blocks={vaultState?.chain || []}
+            brokenAt={verifyResult?.brokenAt ?? -1}
+            chainValid={vaultState?.chainValid ?? true}
+          />
+        </section>
 
-        {/* Row 3: HashTableView (50%) + HuffmanPanel (50%) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
+        {/* SECTION 4: DEEP DATA STRUCTURE MECHANICS (Equal 6 + 6 Columns) */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           <HashTableView buckets={vaultState?.buckets || []} />
           <HuffmanPanel selectedFile={selectedFile} />
-        </div>
+        </section>
 
-        {/* Row 4: AttackerPanel (Simulation Mode) */}
-        <AttackerPanel
-          files={vaultState?.files || []}
-          blocks={vaultState?.chain || []}
-          onTamperFile={tamperFile}
-          onTamperBlock={tamperBlock}
-        />
+        {/* SECTION 5: ADVERSARIAL SIMULATION LAB */}
+        <section>
+          <AttackerPanel
+            files={vaultState?.files || []}
+            blocks={vaultState?.chain || []}
+            onTamperFile={tamperFile}
+            onTamperBlock={tamperBlock}
+          />
+        </section>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-[#1f2937] bg-[#11161f]/60 py-4 px-6 text-center text-xs font-mono text-gray-500">
-        Tamper-Proof Evidence Vault • Built with C++17 Core Engine & Next.js Simulation Layer • AIT Pune Data Structures
+      {/* Clean Light Footer */}
+      <footer className="border-t-2 border-[#4A6150]/30 bg-white py-5 px-6 text-center text-xs font-mono text-[#5A6B5E]">
+        Tamper-Proof Evidence Vault • C++17 Forensic Core &amp; Next.js Simulation Layer • AIT Pune Data Structures
       </footer>
     </div>
   );

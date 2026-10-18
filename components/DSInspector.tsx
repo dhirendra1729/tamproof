@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import { Layers, RotateCcw, ListOrdered, Zap, Play } from "lucide-react";
 
 interface DSInspectorProps {
   stack: string[];
@@ -17,107 +16,104 @@ export function DSInspector({
   onProcessUrgent,
 }: DSInspectorProps) {
   return (
-    <div className="bg-[#11161f] border border-[#1f2937] rounded-lg p-5 flex flex-col justify-between h-full">
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <Layers className="w-4 h-4 text-cyan-400" />
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-200 font-mono">
-            Data Structure Inspector
-          </h2>
+    <div className="bg-white border-2 border-[#4A6150] rounded-xl overflow-hidden shadow-cardFrame flex flex-col justify-between h-full">
+      {/* Box Header Bar */}
+      <div className="bg-[#E2ECE5] border-b-2 border-[#4A6150]/30 px-5 py-3.5 flex items-center justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-[#223326] font-mono">
+          Data Structure Inspector
+        </h2>
+        <span className="text-[11px] font-mono font-bold text-[#5A6B5E] px-2 py-0.5 rounded bg-white border border-[#BDCEBF]">
+          C++ In-Memory
+        </span>
+      </div>
+
+      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+        {/* 1. Stack (Undo History) */}
+        <div className="border-2 border-[#BDCEBF] rounded-lg p-3.5 bg-[#F4F8F5]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-mono font-bold text-[#223326] uppercase">
+              LIFO Stack (Undo History)
+            </span>
+            <span className="text-[10px] font-mono font-bold text-[#7E22CE] px-2 py-0.5 rounded bg-[#F3E8FF] border border-[#7E22CE]">
+              size: {stack.length}
+            </span>
+          </div>
+          {stack.length === 0 ? (
+            <p className="text-[11px] font-mono text-[#5A6B5E] italic">Stack empty (no actions to reverse)</p>
+          ) : (
+            <div className="space-y-1.5 max-h-[85px] overflow-y-auto custom-scrollbar">
+              {stack.map((item, idx) => (
+                <div
+                  key={idx}
+                  className="text-[10px] font-mono px-2.5 py-1 rounded bg-white border border-[#BDCEBF] text-[#223326] flex items-center justify-between font-bold"
+                >
+                  <span className="truncate">{item}</span>
+                  <span className="text-[9px] text-[#5A6B5E]">#{idx}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="space-y-4">
-          {/* 1. Stack (Undo History) */}
-          <div className="border border-[#1f2937] rounded-md p-3 bg-[#0a0e14]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono font-semibold text-gray-300 flex items-center gap-1.5">
-                <RotateCcw className="w-3.5 h-3.5 text-purple-400" />
-                LIFO Stack (Undo History)
-              </span>
-              <span className="text-[10px] font-mono text-purple-400 px-1.5 py-0.2 rounded bg-purple-950/40 border border-purple-500/30">
-                size: {stack.length}
-              </span>
-            </div>
-            {stack.length === 0 ? (
-              <p className="text-[11px] font-mono text-gray-600 italic">Stack empty</p>
-            ) : (
-              <div className="space-y-1 max-h-[85px] overflow-y-auto custom-scrollbar">
-                {stack.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="text-[10px] font-mono px-2 py-1 rounded bg-[#11161f] border border-[#1f2937] text-gray-300 flex items-center justify-between"
-                  >
-                    <span className="truncate">{item}</span>
-                    <span className="text-[9px] text-gray-500">#{idx}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* 2. CircularQueue (Ingestion Pipeline) */}
+        <div className="border-2 border-[#BDCEBF] rounded-lg p-3.5 bg-[#F4F8F5]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-mono font-bold text-[#223326] uppercase">
+              CircularQueue (Ingest Buffer)
+            </span>
+            <span className="text-[10px] font-mono font-bold text-[#5A7D5C] px-2 py-0.5 rounded bg-[#EBF3EE] border border-[#5A7D5C]">
+              {queue.length} / 64
+            </span>
           </div>
-
-          {/* 2. CircularQueue (Ingestion Pipeline) */}
-          <div className="border border-[#1f2937] rounded-md p-3 bg-[#0a0e14]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono font-semibold text-gray-300 flex items-center gap-1.5">
-                <ListOrdered className="w-3.5 h-3.5 text-cyan-400" />
-                CircularQueue (Ingest Buffer)
-              </span>
-              <span className="text-[10px] font-mono text-cyan-400 px-1.5 py-0.2 rounded bg-cyan-950/40 border border-cyan-500/30">
-                {queue.length} / 64
-              </span>
-            </div>
-            {queue.length === 0 ? (
-              <p className="text-[11px] font-mono text-gray-600 italic">Queue empty (all files ingested)</p>
-            ) : (
-              <div className="flex flex-wrap gap-1 max-h-[70px] overflow-y-auto custom-scrollbar">
-                {queue.map((item, idx) => (
-                  <span
-                    key={idx}
-                    className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/50 border border-cyan-500/30 text-cyan-300"
-                  >
-                    {item}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* 3. MinHeap (Urgent Verification Queue) */}
-          <div className="border border-[#1f2937] rounded-md p-3 bg-[#0a0e14]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-mono font-semibold text-gray-300 flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-amber-400" />
-                MinHeap (Urgent Priority)
-              </span>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-amber-400 px-1.5 py-0.2 rounded bg-amber-950/40 border border-amber-500/30">
-                  size: {urgentHeap.length}
-                </span>
-                <button
-                  onClick={onProcessUrgent}
-                  disabled={urgentHeap.length === 0}
-                  className="px-2 py-0.5 rounded bg-amber-500 hover:bg-amber-400 text-black font-bold text-[10px] font-mono flex items-center gap-1 disabled:opacity-40 transition-colors"
+          {queue.length === 0 ? (
+            <p className="text-[11px] font-mono text-[#5A6B5E] italic">Queue empty (all files ingested)</p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5 max-h-[70px] overflow-y-auto custom-scrollbar">
+              {queue.map((item, idx) => (
+                <span
+                  key={idx}
+                  className="text-[10px] font-mono px-2.5 py-1 rounded bg-white border-2 border-[#5A7D5C] text-[#223326] font-bold"
                 >
-                  <Play className="w-2.5 h-2.5 fill-black" />
-                  Pop
-                </button>
-              </div>
+                  {item}
+                </span>
+              ))}
             </div>
-            {urgentHeap.length === 0 ? (
-              <p className="text-[11px] font-mono text-gray-600 italic">No urgent files queued</p>
-            ) : (
-              <div className="flex flex-wrap gap-1 max-h-[70px] overflow-y-auto custom-scrollbar">
-                {urgentHeap.map((fileId, idx) => (
-                  <span
-                    key={idx}
-                    className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950/60 border border-amber-500/50 text-amber-300 font-bold"
-                  >
-                    File #{fileId}
-                  </span>
-                ))}
-              </div>
-            )}
+          )}
+        </div>
+
+        {/* 3. MinHeap (Urgent Verification Queue) */}
+        <div className="border-2 border-[#BDCEBF] rounded-lg p-3.5 bg-[#F4F8F5]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-mono font-bold text-[#223326] uppercase">
+              MinHeap (Urgent Priority)
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono font-bold text-[#92400E] px-2 py-0.5 rounded bg-[#FEF3C7] border border-[#C48B47]">
+                size: {urgentHeap.length}
+              </span>
+              <button
+                onClick={onProcessUrgent}
+                disabled={urgentHeap.length === 0}
+                className="px-2.5 py-1 rounded bg-[#C48B47] hover:bg-[#92400E] text-white font-bold text-[10px] font-mono disabled:opacity-40 transition-colors shadow-sm"
+              >
+                Pop Next
+              </button>
+            </div>
           </div>
+          {urgentHeap.length === 0 ? (
+            <p className="text-[11px] font-mono text-[#5A6B5E] italic">No urgent files queued</p>
+          ) : (
+            <div className="flex flex-wrap gap-1.5 max-h-[70px] overflow-y-auto custom-scrollbar">
+              {urgentHeap.map((fileId, idx) => (
+                <span
+                  key={idx}
+                  className="text-[10px] font-mono px-2.5 py-1 rounded bg-[#FEF3C7] border-2 border-[#C48B47] text-[#92400E] font-bold"
+                >
+                  File #{fileId}
+                </span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

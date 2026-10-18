@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { UploadCloud, FileText, Sparkles, Loader2 } from "lucide-react";
 
 interface DropzoneProps {
   onFilesSelected: (files: { name: string; base64: string }[]) => void;
@@ -17,7 +16,6 @@ export function Dropzone({ onFilesSelected, isIngesting }: DropzoneProps) {
       const reader = new FileReader();
       reader.onload = () => {
         const result = reader.result as string;
-        // Data URL format: "data:...;base64,xxxx"
         const commaIdx = result.indexOf(",");
         resolve(commaIdx !== -1 ? result.slice(commaIdx + 1) : result);
       };
@@ -70,25 +68,23 @@ export function Dropzone({ onFilesSelected, isIngesting }: DropzoneProps) {
   };
 
   return (
-    <div className="bg-[#11161f] border border-[#1f2937] rounded-lg p-5 flex flex-col justify-between">
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <UploadCloud className="w-4 h-4 text-cyan-400" />
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-gray-200 font-mono">
-              Evidence Ingestion
-            </h2>
-          </div>
-          <button
-            onClick={loadSampleEvidence}
-            disabled={isIngesting}
-            className="px-2.5 py-1 rounded bg-cyan-950/50 hover:bg-cyan-900/60 border border-cyan-500/30 text-xs font-mono text-cyan-300 flex items-center gap-1.5 transition-colors disabled:opacity-50"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            Load Sample Evidence
-          </button>
-        </div>
+    <div className="bg-white border-2 border-[#4A6150] rounded-xl overflow-hidden shadow-cardFrame flex flex-col justify-between h-full">
+      {/* Box Header Bar */}
+      <div className="bg-[#E2ECE5] border-b-2 border-[#4A6150]/30 px-5 py-3.5 flex items-center justify-between">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-[#223326] font-mono">
+          Evidence Ingestion
+        </h2>
+        <button
+          onClick={loadSampleEvidence}
+          disabled={isIngesting}
+          className="px-3.5 py-1.5 rounded border-2 border-[#5A7D5C] bg-white hover:bg-[#5A7D5C] hover:text-white text-xs font-mono font-bold text-[#223326] transition-colors disabled:opacity-50 shadow-sm"
+        >
+          Load Sample Evidence
+        </button>
+      </div>
 
+      {/* Box Body */}
+      <div className="p-5 flex-1 flex flex-col justify-center">
         {/* Drop target */}
         <div
           onDragOver={(e) => {
@@ -102,10 +98,10 @@ export function Dropzone({ onFilesSelected, isIngesting }: DropzoneProps) {
             handleFiles(e.dataTransfer.files);
           }}
           onClick={() => fileInputRef.current?.click()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all ${
+          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-all ${
             isDragOver
-              ? "border-cyan-400 bg-cyan-950/20 shadow-[0_0_15px_rgba(34,211,238,0.2)]"
-              : "border-[#1f2937] hover:border-cyan-500/50 hover:bg-[#141a24]"
+              ? "border-[#223326] bg-[#EBF3EE]"
+              : "border-[#5A7D5C] bg-[#F4F8F5] hover:border-[#223326] hover:bg-[#EBF3EE]"
           }`}
         >
           <input
@@ -119,22 +115,20 @@ export function Dropzone({ onFilesSelected, isIngesting }: DropzoneProps) {
           <div className="flex flex-col items-center justify-center gap-2">
             {isIngesting ? (
               <>
-                <Loader2 className="w-8 h-8 text-cyan-400 animate-spin" />
-                <p className="text-sm font-mono text-cyan-300 font-medium">
-                  CircularQueue: Dequeueing & Hashing...
+                <p className="text-sm font-mono text-[#223326] font-bold">
+                  CircularQueue: Processing batch...
                 </p>
-                <p className="text-xs text-gray-400 font-mono">
-                  Hashing with SHA-256 & Huffman compressing live in C++ engine
+                <p className="text-xs text-[#5A6B5E] font-mono">
+                  Hashing with SHA-256 and compressing via Huffman in C++
                 </p>
               </>
             ) : (
               <>
-                <FileText className="w-8 h-8 text-cyan-400/80" />
-                <p className="text-sm text-gray-200 font-mono">
-                  Drag & drop forensic files here, or <span className="text-cyan-400 underline">browse</span>
+                <p className="text-sm text-[#223326] font-bold font-mono">
+                  Drag &amp; drop files here, or <span className="underline text-[#5A7D5C]">browse</span>
                 </p>
-                <p className="text-xs text-gray-500 font-mono">
-                  Supports up to 1 MB per file (text, logs, configs, binary)
+                <p className="text-xs text-[#5A6B5E] font-mono mt-0.5">
+                  Raw binary, text, logs, configs (max 1 MB per file)
                 </p>
               </>
             )}
