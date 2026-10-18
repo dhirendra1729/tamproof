@@ -1,0 +1,11 @@
+timestamp,ip_address,endpoint,status_code,user_agent
+2026-10-18T20:14:02Z,192.168.1.104,/api/login,200,Mozilla/5.0
+2026-10-18T20:14:45Z,192.168.1.104,/api/evidence/list,200,Mozilla/5.0
+2026-10-18T20:15:10Z,10.0.0.55,/admin/vault,403,curl/8.1.2
+2026-10-18T20:15:22Z,10.0.0.55,/admin/vault,403,curl/8.1.2
+2026-10-18T20:16:01Z,192.168.1.104,/api/evidence/upload,201,Mozilla/5.0
+2026-10-18T20:18:30Z,10.0.0.55,/api/internal/debug,404,Python-urllib/3.11
+2026-10-18T20:20:15Z,192.168.1.104,/api/logout,200,Mozilla/5.0
+2026-10-18T20:22:00Z,10.0.0.55,/ssh/login,401,OpenSSH_9.0
+2026-10-18T20:23:44Z,10.0.0.55,/ssh/login,401,OpenSSH_9.0
+2026-10-18T20:25:00Z,172.16.0.2,/healthz,200,Kubelet/v1.28
